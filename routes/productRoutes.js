@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.get("/", productController.getAllProduct)
 
-router.get("/id/:id", signin, productController.findProductById)
+router.get("/id/:id", productController.findProductById)
 
 // Admin
 router.post("/", signin, productController.createProduct)
