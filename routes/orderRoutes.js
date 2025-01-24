@@ -14,15 +14,15 @@ router.get("/:id", signin, orderController.findOrderById)
 // Admin
 router.get("/", signin, orderController.getAllOrder)
 
-router.put("/:orderId/confirmed", signin, orderController.confirmOrder)
+router.put("/:orderId/confirmed", orderController.confirmOrder)
 
-router.put("/:orderId/ship", signin, orderController.shipOrder)
+router.put("/:orderId/ship", orderController.shipOrder)
 
-router.put("/:orderId/deliver", signin, orderController.deliverOrder)
+router.put("/:orderId/deliver", orderController.deliverOrder)
 
-router.put("/:orderId/cancel", signin, orderController.cancelOrder)
+router.put("/:orderId/cancel", orderController.cancelOrder)
 
-router.delete("/:orderId/delete", signin, orderController.deleteOrder)
+router.delete("/:orderId/delete", orderController.deleteOrder)
 
 module.exports = router
 
