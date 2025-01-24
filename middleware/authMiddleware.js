@@ -34,7 +34,8 @@ exports.signin = async (req, res, next) => {
         next();
     } catch (error) {
         res.status(401).json({
-            message: "Invalid token"
+            message: "Invalid token",
+            error: error.message
         });
     }
 }
