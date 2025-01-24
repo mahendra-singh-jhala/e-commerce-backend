@@ -1,66 +1,44 @@
 const Razorpay = require("razorpay");
 const Order = require("../models/orderModel");
+const crypto = require('crypto')
 
 require("dotenv").config();
 
 const razorpay = new Razorpay({
-    key_id: process.env.ROZ_KEY_ID, 
+    key_id: process.env.ROZ_KEY_ID,
     key_secret: process.env.ROZ_KEY_SECRET
 });
 
 exports.payment = async (req, res) => {
-    const orderId = req.params.id;
-    
+    const { amount, currency } = req.body;
+
+    const options = {
+        amount: amount * 100,
+        currency,
+    };
+
     try {
-        const order = await Order.findById(orderId)
-            .populate('user')
-            .populate('shippingAddress');
-
-        if (!order) {
-            return res.status(404).json({
-                message: "Order not found"
-            });
-        }
-
-        const payment = {
-            amount: order.totalDiscountPrice * 100,
-            currency: "INR",
-            description: `Payment for Order ID: ${orderId}`,
-            customer: {
-                name: `${order.user.firstname} ${order.user.lastname}`,
-                email: order.user.email,
-                contact: String(order.shippingAddress.phoneNumber)
-            },
-            notify: {
-                sms: true,
-                email: true
-            },
-            reminder_enable: true,
-            callback_url: `http://localhost:3000/payment/${orderId}`,
-            callback_method: "get"
-        };
-       
-        const paymentLink = await razorpay.paymentLink.create(payment);
-
-        const paymentLinkId = paymentLink.id;
-        const payment_link_url = paymentLink.short_url;
-
+        const order = await razorpay.orders.create(options);
         res.status(200).json({
-            message: "Payment successful",
-            paymentLinkId,
-            payment_link_url
-        });
-
+            id: order.id,
+            currency: order.currency,
+            amount: order.amount,
+        })
     } catch (error) {
         res.status(500).json({
-            message: "Error: To Payment",
-            error: error.message
+            message: 'Error creating order',
+            error
         });
     }
 };
 
-exports.updatePaymentInfo = async (req, res) => {
-    const { orderId, paymentId } = req.body;
+
+exports.paymentVerification = async (req, res) => {
+    const { roz_orderId, paymentId, signature, orderId } = req.body;
+
+    const generatedSignature = crypto.createHmac('sha256', razorpay.key_secret)
+        .update(roz_orderId + '|' + paymentId)
+        .digest('hex');
 
     try {
         const order = await Order.findById(orderId);
@@ -68,24 +46,27 @@ exports.updatePaymentInfo = async (req, res) => {
             return res.status(404).json({ message: "Order not found" });
         }
 
-        const payment = await razorpay.payments.fetch(paymentId);
+        if (generatedSignature === signature) {
+            if (order.orderStatus === "PENDING") {
+                order.paymentDetails.paymentId = paymentId;
+                order.paymentDetails.paymentStatus = "COMPLETED";
+                order.orderStatus = "PLACED";
 
-        if (order.orderStatus === "PENDING") {
-            order.paymentDetails.paymentId = paymentId;
-            order.paymentDetails.paymentStatus = "COMPLETED";
-            order.orderStatus = "PLACED";
-
-            await order.save();
-            return res.status(200).json({ 
-                success: true, 
-                message: "Payment successful",
-                order
+                await order.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "Payment verified successfully",
+                });
+            }
+        } else {
+            res.status(400).json({ 
+                success: false 
             });
-        } 
+        }
     } catch (error) {
-        return res.status(500).json({ 
-            message: "Error processing payment callback", 
-            error: error.message 
+        return res.status(500).json({
+            message: "Error to verify payment",
+            error: error.message
         });
     }
-};
+}

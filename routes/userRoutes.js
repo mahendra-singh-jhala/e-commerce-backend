@@ -1,6 +1,6 @@
 const express = require("express")
 const userController = require("../controllers/userController")
-const { userSignin } = require("../middleware/authMiddleware")
+const { signin } = require("../middleware/authMiddleware")
 
 const router = express.Router();
 
@@ -8,6 +8,6 @@ const router = express.Router();
 router.get("/", userController.getAllUser)
 
 // This route handles GET requests for user profile
-router.get("/profile", userSignin, userController.getUserById)
+router.get("/profile", signin, userController.getUserById)
 
 module.exports = router

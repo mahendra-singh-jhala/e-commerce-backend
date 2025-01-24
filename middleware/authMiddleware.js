@@ -4,7 +4,7 @@ const User = require("../models/userModel");
 // Load environment variables
 require("dotenv").config();
 
-exports.userSignin = async (req, res, next) => {
+exports.signin = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         return res.status(401).json({

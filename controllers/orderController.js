@@ -119,7 +119,7 @@ exports.findOrderById = async (req, res) => {
 exports.usersOrder = async (req, res) => {
     const userId = req.user._id
     try {
-        const orders = await Order.find({ user: userId, orderStatus: "PLACED" })
+        const orders = await Order.find({ user: userId })
             .populate({ path: "orderItems", populate: { path: "product" } }).lean()
 
         res.status(200).json({
@@ -158,7 +158,7 @@ exports.placeOrder = async (req, res) => {
         const order = await Order.findById(orderId);
 
         order.orderStatus = "Placed",
-            order.paymentDetails.status = "COMPLETED"
+        order.paymentDetails.status = "COMPLETED"
 
         const orderStatus = await order.save();
         res.status(200).json({

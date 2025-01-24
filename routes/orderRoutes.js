@@ -1,28 +1,28 @@
 const express = require("express")
-const { userSignin } = require("../middleware/authMiddleware")
+const { signin } = require("../middleware/authMiddleware")
 const orderController = require("../controllers/orderController")
 
 const router = express.Router();
 
-router.post("/", userSignin, orderController.createOrder)
+router.post("/", signin, orderController.createOrder)
 
-router.get("/user", userSignin, orderController.usersOrder)
+router.get("/user", signin, orderController.usersOrder)
 
-router.get("/:id", userSignin, orderController.findOrderById)
+router.get("/:id", signin, orderController.findOrderById)
 
 
 // Admin
-router.get("/", userSignin, orderController.getAllOrder)
+router.get("/", signin, orderController.getAllOrder)
 
-router.put("/:orderId/confirmed", userSignin, orderController.confirmOrder)
+router.put("/:orderId/confirmed", signin, orderController.confirmOrder)
 
-router.put("/:orderId/ship", userSignin, orderController.shipOrder)
+router.put("/:orderId/ship", signin, orderController.shipOrder)
 
-router.put("/:orderId/deliver", userSignin, orderController.deliverOrder)
+router.put("/:orderId/deliver", signin, orderController.deliverOrder)
 
-router.put("/:orderId/cancel", userSignin, orderController.cancelOrder)
+router.put("/:orderId/cancel", signin, orderController.cancelOrder)
 
-router.delete("/:orderId/delete", userSignin, orderController.deleteOrder)
+router.delete("/:orderId/delete", signin, orderController.deleteOrder)
 
 module.exports = router
 

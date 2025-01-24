@@ -1,11 +1,11 @@
 const express = require("express")
-const { userSignin } = require("../middleware/authMiddleware");
+const { signin } = require("../middleware/authMiddleware");
 const paymentController = require("../controllers/paymentController")
 
 const router = express.Router()
 
-router.post("/:id", userSignin, paymentController.payment)
+router.post("/payment", signin, paymentController.payment)
 
-router.put("/payment", paymentController.updatePaymentInfo);
+router.post("/paymentVerify", paymentController.paymentVerification);
 
 module.exports = router
