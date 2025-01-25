@@ -7,9 +7,10 @@ const CartItem = require("../models/cartItemModel")
 exports.createOrder = async (req, res) => {
     const userId = req.user._id
     const user = req.user
-    const { firstname, lastname, city, state, streetAddress, zipCode, phoneNumber } = req.body
+    const { firstname, lastname, city, state, streetAddress, zipCode, phoneNumber } = req.body.address
 
     try {
+        
         const existAddress = await Address.findById(streetAddress._id)
         if (existAddress) {
             return res.status(409).json({

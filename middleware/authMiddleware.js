@@ -19,8 +19,6 @@ exports.signin = async (req, res, next) => {
         });
     }
 
-    console.log(token)
-
     try {
         const decoded = jwt.verify(token, process.env.SECRET_KEY); 
         const userId = decoded.userId;
