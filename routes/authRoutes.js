@@ -9,5 +9,4 @@ router.post("/register", authController.register)
 // This route handles POST requests for user login
 router.post("/login", authController.login)
 
-
 module.exports = router

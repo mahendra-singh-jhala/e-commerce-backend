@@ -4,13 +4,12 @@ const Order = require("../models/orderModel")
 const OrderItems = require("../models/orderItemModel")
 const CartItem = require("../models/cartItemModel")
 
+// Controller function for create order
 exports.createOrder = async (req, res) => {
     const userId = req.user._id
     const user = req.user
     const { firstname, lastname, city, state, streetAddress, zipCode, phoneNumber } = req.body.address
-
     try {
-        
         const existAddress = await Address.findById(streetAddress._id)
         if (existAddress) {
             return res.status(409).json({
@@ -35,7 +34,6 @@ exports.createOrder = async (req, res) => {
         await user.save();
 
         const cart = await Cart.findOne({ user: userId })
-
         let cartItem = await CartItem.find({ cart: cart._id }).populate("product");
 
         const orderItems = [];
@@ -46,7 +44,6 @@ exports.createOrder = async (req, res) => {
 
         for (const item of cartItem) {
             totalItem += item.quantity;
-
             const orderItem = new OrderItems({
                 price: item.price,
                 product: item.product,
@@ -64,7 +61,6 @@ exports.createOrder = async (req, res) => {
             totalDiscount += (item.price - item.discountedPrice) * item.quantity;
         }
 
-
         const createOrder = new Order({
             user,
             orderItems,
@@ -75,13 +71,11 @@ exports.createOrder = async (req, res) => {
             shippingAddress: address
         });
         
-
         const saveOrder = await createOrder.save();
         res.status(200).json({
             message: "Oreder create successfully",
             saveOrder
-        });
-
+        })
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
@@ -90,15 +84,14 @@ exports.createOrder = async (req, res) => {
     }
 }
 
+// Controller function for find order by ID
 exports.findOrderById = async (req, res) => {
     const orderId = req.params.id
-
     try {
         const order = await Order.findById(orderId)
             .populate("user")
             .populate({ path: "orderItems", populate: { path: "product" } })
             .populate("shippingAddress")
-
         if (!order) {
             res.status(400).json({
                 message: "order not found"
@@ -108,7 +101,6 @@ exports.findOrderById = async (req, res) => {
         res.status(200).json({
             order
         })
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
@@ -117,6 +109,7 @@ exports.findOrderById = async (req, res) => {
     }
 }
 
+// Controller function for find user order
 exports.usersOrder = async (req, res) => {
     const userId = req.user._id
     try {
@@ -133,8 +126,8 @@ exports.usersOrder = async (req, res) => {
     }
 }
 
-
 // Admin
+// Controller function for find all order
 exports.getAllOrder = async (req, res) => {
     try {
         const orders = await Order.find()
@@ -152,15 +145,14 @@ exports.getAllOrder = async (req, res) => {
     }
 }
 
+// Controller function for update orderStatus (placed order)
 exports.placeOrder = async (req, res) => {
     const orderId  = req.params.id
-
     try {
         const order = await Order.findById(orderId);
 
         order.orderStatus = "Placed",
         order.paymentDetails.status = "COMPLETED"
-
         const orderStatus = await order.save();
         res.status(200).json({
             orderStatus
@@ -172,14 +164,13 @@ exports.placeOrder = async (req, res) => {
     }
 }
 
+// Controller function for update orderStatus (confirmed order)
 exports.confirmOrder = async (req, res) => {
     const orderId = req.params.orderId
-
     try {
         const order = await Order.findById(orderId);
 
         order.orderStatus = "CONFIRMED"
-
         const orderStatus = await order.save();
         res.status(200).json({
             orderStatus
@@ -192,14 +183,13 @@ exports.confirmOrder = async (req, res) => {
     }
 }
 
+// Controller function for update orderStatus (shipped order)
 exports.shipOrder = async (req, res) => {
     const orderId = req.params.orderId
-
     try {
         const order = await Order.findById(orderId);
 
         order.orderStatus = "SHIPPED"
-
         const orderStatus = await order.save();
         res.status(200).json({
             orderStatus
@@ -211,15 +201,13 @@ exports.shipOrder = async (req, res) => {
     }
 }
 
-
+// Controller function for update orderStatus (delivered order)
 exports.deliverOrder = async (req, res) => {
     const orderId = req.params.orderId
-
     try {
         const order = await Order.findById(orderId);
 
         order.orderStatus = "DELIVERED"
-
         const orderStatus = await order.save();
         res.status(200).json({
             orderStatus
@@ -231,14 +219,13 @@ exports.deliverOrder = async (req, res) => {
     }
 }
 
+// Controller function for update orderStatus (cancelled order)
 exports.cancelOrder = async (req, res) => {
     const orderId = req.params.orderId
-
     try {
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId)
 
         order.orderStatus = "CANCELLED"
-
         const orderStatus = await order.save();
         res.status(200).json({
             orderStatus
@@ -250,16 +237,15 @@ exports.cancelOrder = async (req, res) => {
     }
 }
 
+// Controller function for update deleted order
 exports.deleteOrder = async (req, res) => {
     const orderId = req.params.orderId
-
     try {
         await Order.findByIdAndDelete(orderId)
 
         res.status(200).json({
             message: "Order Delete Succsefully"
         })
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later'

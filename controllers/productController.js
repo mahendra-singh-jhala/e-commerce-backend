@@ -1,50 +1,37 @@
 const Product = require("../models/productModel")
 const Category = require("../models/categoryModel")
 
+// Controller function for create product
 exports.createProduct = async (req, res) => {
-    const { imageUrl, brand, title, color, discountedPrice, price, discountPersent, size, quantity, topLevelCategory, secondLevelCategory, thirdLevelCategory, description} = req.body;
-
+    const { imageUrl, brand, title, color, discountedPrice, price, discountPersent, size, quantity, topLevelCategory, secondLevelCategory, thirdLevelCategory, description} = req.body
     try { 
         let topLevel = await Category.findOne({ name: topLevelCategory });
         if (!topLevel) {
             topLevel = new Category({
                 name: topLevelCategory,
                 level: 1
-            });
-
+            })
             await topLevel.save();
         }
-
         
-        let secondLevel = await Category.findOne({
-            name: secondLevelCategory,
-            parentCategory: topLevel._id
-        });
-
+        let secondLevel = await Category.findOne({ name: secondLevelCategory, parentCategory: topLevel._id })
         if (!secondLevel) {
             secondLevel = new Category({
                 name: secondLevelCategory,
                 parentCategory: topLevel._id,
                 level: 2
-            });
-
+            })
             await secondLevel.save();
         }
-
     
-        let thirdLevel = await Category.findOne({
-            name: thirdLevelCategory,
-            parentCategory: secondLevel._id
-        });
-
+        let thirdLevel = await Category.findOne({ name: thirdLevelCategory, parentCategory: secondLevel._id});
         if (!thirdLevel) {
             thirdLevel = new Category({
                 name: thirdLevelCategory,
                 parentCategory: secondLevel._id,
                 level: 3
-            });
-
-            await thirdLevel.save();
+            })
+            await thirdLevel.save()
         }
 
         const product = new Product({
@@ -59,16 +46,13 @@ exports.createProduct = async (req, res) => {
             quantity: quantity,
             sizes: size,
             category: thirdLevel._id,
-
         })
 
         await product.save()
-
         res.status(200).json({
             message: "Product Create Sucssesfully",
             product
         })
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
@@ -77,6 +61,7 @@ exports.createProduct = async (req, res) => {
     }
 }
 
+// Controller function for update product
 exports.updateProduct = async (req, res) => {
     try {
         const updateProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true })
@@ -92,6 +77,7 @@ exports.updateProduct = async (req, res) => {
     }
 }
 
+// Controller function for delete product
 exports.deleteProduct = async (req, res) => {
     const productId = req.params.id
     try {
@@ -106,8 +92,8 @@ exports.deleteProduct = async (req, res) => {
     }
 }
 
-
 // user
+// Controller function for find product by ID
 exports.findProductById = async (req, res) => {
     const productId = req.params.id
     try {
@@ -121,7 +107,6 @@ exports.findProductById = async (req, res) => {
         res.status(200).json({
             product
         })
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
@@ -130,16 +115,14 @@ exports.findProductById = async (req, res) => {
     }
 }
 
-
+// Controller function for get all product
 exports.getAllProduct = async (req, res) => {
-    const { category, color, sizes, minPrice, maxPrice, pageNumber, pageSize } = req.query;
+    const { category, color, sizes, minPrice, maxPrice, pageNumber, pageSize } = req.query
 
-    const currentPage = pageNumber ? Math.max(1, parseInt(pageNumber)) : 1;
-    const size = pageSize ? parseInt(pageSize) : 10;
-    
+    const currentPage = pageNumber ? Math.max(1, parseInt(pageNumber)) : 1
+    const size = pageSize ? parseInt(pageSize) : 10
     try {
-        let query = Product.find().populate("category");
-
+        let query = Product.find().populate("category")
         if (category) {
             const existCategory = await Category.findOne({ name: category });
             if (existCategory) {
@@ -170,19 +153,15 @@ exports.getAllProduct = async (req, res) => {
 
         const products = await query.exec();
         const totalPages = Math.ceil(totalProduct / size);
-
         res.status(200).json({
             content: products,
             currentPage,
             totalPages
         });
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
             error: error.message
         });
     }
-};
-
-
+}

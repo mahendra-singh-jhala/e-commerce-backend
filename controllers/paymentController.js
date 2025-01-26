@@ -7,16 +7,15 @@ require("dotenv").config();
 const razorpay = new Razorpay({
     key_id: process.env.ROZ_KEY_ID,
     key_secret: process.env.ROZ_KEY_SECRET
-});
+})
 
+// Controller function for payment
 exports.payment = async (req, res) => {
     const { amount, currency } = req.body;
-
     const options = {
         amount: amount * 100,
         currency,
     };
-
     try {
         const order = await razorpay.orders.create(options);
         res.status(200).json({
@@ -32,14 +31,12 @@ exports.payment = async (req, res) => {
     }
 };
 
-
+// Controller function for payment verification
 exports.paymentVerification = async (req, res) => {
     const { roz_orderId, paymentId, signature, orderId } = req.body;
-
     const generatedSignature = crypto.createHmac('sha256', razorpay.key_secret)
         .update(roz_orderId + '|' + paymentId)
-        .digest('hex');
-
+        .digest('hex')
     try {
         const order = await Order.findById(orderId);
         if (!order) {

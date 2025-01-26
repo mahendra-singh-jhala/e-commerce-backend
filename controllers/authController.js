@@ -3,13 +3,12 @@ const Cart = require("../models/cartModel")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 
-
 // Loard enviornment variable
 require("dotenv").config();
 
+// Controller function for user registration
 exports.register = async (req, res) => {
-    const { username, firstname, lastname, email, password } = req.body;
-
+    const { username, firstname, lastname, email, password } = req.body
     try {
         const existingUser = await User.findOne({ email })
         if (existingUser) {
@@ -19,8 +18,7 @@ exports.register = async (req, res) => {
         }
 
         // hash Password
-        const hashPassword = await bcrypt.hash(password, 10);
-
+        const hashPassword = await bcrypt.hash(password, 10)
         // register user
         const newUser = new User({
             username,
@@ -31,7 +29,6 @@ exports.register = async (req, res) => {
         })
 
         await newUser.save();
-
         // create a cart for the user
         const cart = new Cart({
             user: newUser._id 
@@ -39,7 +36,6 @@ exports.register = async (req, res) => {
 
         // Save the cart to the database
         await cart.save();
-
         // Respond with success message
         res.status(200).json({
             message: "User registered successfully and cart created",
@@ -55,9 +51,9 @@ exports.register = async (req, res) => {
     }
 }
 
+// Controller function for user login
 exports.login = async (req, res) => {
     const { email, password } = req.body;
-
     try {
         const user = await User.findOne({ email })
         if (!user) {
@@ -75,7 +71,6 @@ exports.login = async (req, res) => {
         
         // if valid, generate the JWT token for the user
         const token = jwt.sign({  userId: user._id, email: user.email }, process.env.SECRET_KEY, { expiresIn: "7D" });
-
         res.json({
             message: "Login Successfully",
             user,

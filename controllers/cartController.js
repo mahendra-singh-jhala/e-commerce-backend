@@ -2,14 +2,12 @@ const Cart = require("../models/cartModel")
 const Product = require("../models/productModel")
 const CartItem = require("../models/cartItemModel")
 
+// Controller function for find user cart
 exports.findUserCart = async (req, res) => {
     const userId = req.user._id
-
     try {
         const cart = await Cart.findOne({ user: userId })
-
         let cartItems = await CartItem.find({ cart: cart._id }).populate("product");
-
         cart.cartItem = cartItems;
 
         let totalPrice = 0
@@ -27,12 +25,10 @@ exports.findUserCart = async (req, res) => {
         cart.totalDiscountPrice = totalDiscountedPrice
         cart.discount = totalPrice - totalDiscountedPrice
 
-
         res.status(200).json({
             message: "User Cart find successfully",
             cart
         });
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
@@ -41,14 +37,12 @@ exports.findUserCart = async (req, res) => {
     }
 }
 
-
+// Controller function for add item to cart
 exports.addItemToCart = async (req, res) => {
     const userId = req.user._id;
     const { productId, size } = req.body;
-
     try {
         const cart = await Cart.findOne({ user: userId });
-
         if (!cart) {
             return res.status(404).json({
                 message: "Cart not found, please create a cart first."
@@ -56,7 +50,6 @@ exports.addItemToCart = async (req, res) => {
         }
 
         const product = await Product.findById(productId);
-
         if (!product) {
             return res.status(404).json({
                 message: "Product not found"
@@ -68,17 +61,14 @@ exports.addItemToCart = async (req, res) => {
             product: productId,
             size,
         });
-
         if (isPresent) {
             isPresent.quantity += 1;
             await isPresent.save();
-
             return res.status(200).json({
                 message: "Item quantity updated successfully",
                 cartItem: isPresent
             });
         } else {
-
             const cartItem = new CartItem({
                 product: productId,
                 cart: cart._id,
@@ -90,16 +80,14 @@ exports.addItemToCart = async (req, res) => {
             });
 
             const createCartItem = await cartItem.save();
+            cart.cartItem.push(createCartItem)
 
-            cart.cartItem.push(createCartItem);
             await cart.save();
-
             res.status(200).json({
                 message: "CartItem added successfully",
                 cartItem: createCartItem
             });
         }
-
     } catch (error) {
         res.status(500).json({
             message: "Internal server error. Please try again later",
@@ -108,10 +96,9 @@ exports.addItemToCart = async (req, res) => {
     }
 };
 
-
+// Controller function for update cartItem
 exports.updateCartItem = async (req, res) => {
-    const { quantity } = req.body;
-
+    const { quantity } = req.body
     try {
         const cartItem = await CartItem.findByIdAndUpdate(
             req.params.id,
@@ -135,12 +122,10 @@ exports.updateCartItem = async (req, res) => {
         cartItem.discountedPrice = discountedPrice;
 
         await cartItem.save();
-
         res.status(200).json({
             message: "Cart item updated successfully",
             updatedCartItem: cartItem
         });
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
@@ -149,18 +134,14 @@ exports.updateCartItem = async (req, res) => {
     }
 };
 
-
-
+// Controller function for remove cartItem
 exports.removeCartItem = async (req, res) => {
     const cartItemId = req.params.id
-
     try {
         await CartItem.findByIdAndDelete(cartItemId);
-
         res.status(200).json({
             message: "CartItem removed successfully",
         });
-
     } catch (error) {
         res.status(500).json({
             message: 'Internal server error. Please try again later',
