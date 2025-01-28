@@ -19,7 +19,11 @@ connectdb();
 
 // middleware
 app.use(bodyParser.json())
-app.use(cors())
+app.use(cors({
+    origin: 'https://shopper-new-e-commerce.netlify.app',  
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true 
+}))
 
 // routes
 app.use("/api/auth", authRouter)
