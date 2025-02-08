@@ -100,23 +100,15 @@ exports.addItemToCart = async (req, res) => {
 exports.updateCartItem = async (req, res) => {
     const { quantity } = req.body
     try {
-        const cartItem = await CartItem.findByIdAndUpdate(
-            req.params.id,
-            { quantity: quantity },
-            { new: true }
-        ).populate("product")
-
+        const cartItem = await CartItem.findByIdAndUpdate(req.params.id, { quantity: quantity }, { new: true }).populate("product")
         if (!cartItem) {
             return res.status(404).json({
                 message: "CartItem not found"
             });
         }
 
-        let price = cartItem?.product?.price
-        let discountedPrice = cartItem?.product?.discountedPrice
-
-        price = cartItem.quantity * price;
-        discountedPrice = cartItem.quantity * discountedPrice;
+        const price = cartItem.product.price * cartItem.quantity;
+        const discountedPrice = cartItem.product.discountedPrice * cartItem.quantity;
 
         cartItem.price = price;
         cartItem.discountedPrice = discountedPrice;
