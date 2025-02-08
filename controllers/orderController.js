@@ -34,13 +34,16 @@ exports.createOrder = async (req, res) => {
         await user.save();
 
         const cart = await Cart.findOne({ user: userId })
-        let cartItem = await CartItem.find({ cart: cart._id }).populate("product");
+        const cartItem = await CartItem.find({ cart: cart._id }).populate("product");
 
         const orderItems = [];
         let totalPrice = 0;
         let totalDiscountPrice = 0;
         let totalDiscount = 0;
         let totalItem = 0;
+
+        console.log(cart)
+        console.log(cartItem)
 
         for (const item of cartItem) {
             totalItem += item.quantity;
@@ -56,9 +59,9 @@ exports.createOrder = async (req, res) => {
             const createOrderItem = await orderItem.save();
             orderItems.push(createOrderItem);
 
-            totalPrice += item.price * item.quantity;
-            totalDiscountPrice += item.discountedPrice * item.quantity;
-            totalDiscount += (item.price - item.discountedPrice) * item.quantity;
+            totalPrice += item.price;
+            totalDiscountPrice += item.discountedPrice;
+            totalDiscount += (item.price - item.discountedPrice);
         }
 
         const createOrder = new Order({

@@ -21,6 +21,7 @@ connectdb();
 app.use(bodyParser.json())
 app.use(cors({
     origin: 'https://shopper-new-e-commerce.netlify.app',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true 
 }))
