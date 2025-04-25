@@ -42,9 +42,6 @@ exports.createOrder = async (req, res) => {
         let totalDiscount = 0;
         let totalItem = 0;
 
-        console.log(cart)
-        console.log(cartItem)
-
         for (const item of cartItem) {
             totalItem += item.quantity;
             const orderItem = new OrderItems({
